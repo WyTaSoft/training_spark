@@ -22,9 +22,6 @@ object MainDriver {
 
     val sparkSession = SparkSessionManager.fetchSparkSession(KayanConstants.APPLICATION_NAME)
 
-    sparkSession.conf.set("spark.network.timeout", "36000")
-    sparkSession.conf.set("spark.sql.broadcastTimeout", "36000")
-
     val reader = getHdfsReader(absoluteConfigPath)(sparkSession.sparkContext)
     val config = ConfigFactory.parseReader(reader)
 
