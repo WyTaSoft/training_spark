@@ -1,17 +1,17 @@
 package com.wts.kayan.app.reader
 
 import com.typesafe.config.Config
-import com.wts.kayan.app.utility.KayanConstants
-import com.wts.kayan.app.utility.KayanUtilities.readDataFrame
+import com.wts.kayan.app.utility.PrimaryConstants
+import com.wts.kayan.app.utility.PrimaryUtilities.readDataFrame
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-class KayanReader()(implicit sparkSession: SparkSession, env: String, config: Config ) {
+class PrimaryReader()(implicit sparkSession: SparkSession, env: String, config: Config ) {
 
   private lazy val clients =
-    readDataFrame(KayanConstants.CLIENTS)
+    readDataFrame(PrimaryConstants.CLIENTS)
 
   private lazy val orders =
-    readDataFrame(KayanConstants.ORDERS)
+    readDataFrame(PrimaryConstants.ORDERS)
 
   def getDataframe(input: String): DataFrame = {
     input.toUpperCase match {

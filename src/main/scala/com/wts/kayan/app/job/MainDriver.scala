@@ -1,10 +1,10 @@
 package com.wts.kayan.app.job
 
-import com.wts.kayan.app.utility.KayanUtilities.getHdfsReader
+import com.wts.kayan.app.utility.PrimaryUtilities.getHdfsReader
 import com.typesafe.config.ConfigFactory
 import com.wts.kayan.SessionManager.SparkSessionManager
-import com.wts.kayan.app.reader.KayanReader
-import com.wts.kayan.app.utility.KayanConstants
+import com.wts.kayan.app.reader.PrimaryReader
+import com.wts.kayan.app.utility.PrimaryConstants
 import org.slf4j.LoggerFactory
 
 object MainDriver {
@@ -20,14 +20,14 @@ object MainDriver {
     val env = args(0)
     val absoluteConfigPath = args(1)
 
-    val sparkSession = SparkSessionManager.fetchSparkSession(KayanConstants.APPLICATION_NAME)
+    val sparkSession = SparkSessionManager.fetchSparkSession(PrimaryConstants.APPLICATION_NAME)
 
     val reader = getHdfsReader(absoluteConfigPath)(sparkSession.sparkContext)
     val config = ConfigFactory.parseReader(reader)
 
     logger.info(s"\n\n****  X job has started ... **** \n\n", this.getClass.getName)
 
-    val kayanreader = new KayanReader()(sparkSession, env, config)
+    val kayanreader = new PrimaryReader()(sparkSession, env, config)
 
     sparkSession.close()
   }

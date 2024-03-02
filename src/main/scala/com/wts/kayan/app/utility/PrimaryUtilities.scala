@@ -8,7 +8,7 @@ import org.apache.spark.SparkContext
 
 import java.io.{BufferedReader, InputStreamReader, Reader}
 
-object KayanUtilities {
+object PrimaryUtilities {
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
@@ -31,25 +31,13 @@ object KayanUtilities {
 
     table match {
 
-      case KayanConstants.CLIENTS =>
-        staticInputPath = config
-          .getString(
-            "training_spark.wytasoft." + KayanConstants.CLIENTS.toLowerCase + "." + env.toLowerCase
-          )
-        tableName = config
-          .getString(
-            "training_spark.wytasoft.tablename." + KayanConstants.CLIENTS.toLowerCase
-          )
+      case PrimaryConstants.CLIENTS =>
+        staticInputPath = "/project/datalake/"
+        tableName = "clients"
 
-      case KayanConstants.ORDERS =>
-        staticInputPath = config
-          .getString(
-            "training_spark.wytasoft." + KayanConstants.ORDERS.toLowerCase + "." + env.toLowerCase
-          )
-        tableName = config
-          .getString(
-            "training_spark.wytasoft." + KayanConstants.ORDERS.toLowerCase
-          )
+      case PrimaryConstants.ORDERS =>
+        staticInputPath = "/project/datalake/"
+        tableName = "orders"
     }
 
     log.info(s"\n Loading $table from $staticInputPath${tableName.toLowerCase} ***\n")

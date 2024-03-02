@@ -1,6 +1,6 @@
 package com.wts.kayan.app.utility
 
-object KayanConstants {
+object PrimaryConstants {
 
   val APPLICATION_NAME = "training_spark"
 
