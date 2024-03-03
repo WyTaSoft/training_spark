@@ -11,15 +11,6 @@ import java.io.{BufferedReader, InputStreamReader, Reader}
 object PrimaryUtilities {
 
   private val log = LoggerFactory.getLogger(this.getClass)
-
-
-  def getHdfsReader(filePath: String)(sc: SparkContext): Reader = {
-    val fs = FileSystem.get(sc.hadoopConfiguration)
-    val path = new Path(filePath)
-    new BufferedReader(new InputStreamReader(fs.open(path)))
-  }
-
-
   def readDataFrame(table: String
                    )
                    (implicit sparkSession: SparkSession, env: String, config: Config): DataFrame = {
@@ -46,6 +37,13 @@ object PrimaryUtilities {
       .parquet(s"$staticInputPath${tableName.toLowerCase}/")
 
     dataFrame
+  }
+
+
+  def getHdfsReader(filePath: String)(sc: SparkContext): Reader = {
+    val fs = FileSystem.get(sc.hadoopConfiguration)
+    val path = new Path(filePath)
+    new BufferedReader(new InputStreamReader(fs.open(path)))
   }
 
 }
