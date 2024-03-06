@@ -13,7 +13,7 @@ class PrimaryMapper(clients: DataFrame,
 
     orders.createOrReplaceTempView("orders_view")
 
-   sparkSession.sql("")
+   sparkSession.sql(get_client_order_SqlString)
   }
 
 }
