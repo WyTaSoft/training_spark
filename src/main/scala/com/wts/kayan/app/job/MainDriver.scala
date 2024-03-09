@@ -25,7 +25,7 @@ object MainDriver {
     val reader = getHdfsReader(absoluteConfigPath)(sparkSession.sparkContext)
     val config = ConfigFactory.parseReader(reader)
 
-    logger.info(s"\n\n****  X job has started ... **** \n\n", this.getClass.getName)
+    logger.info(s"\n\n****  training job has started ... **** \n\n", this.getClass.getName)
 
     val kayanreader = new PrimaryReader()(sparkSession, env, config)
 
