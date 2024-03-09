@@ -13,15 +13,6 @@ class PrimaryRunner(fetchSource: PrimaryReader)(implicit sparkSession: SparkSess
 
   def runPrimaryRunner(): DataFrame = {
 
-    println(
-      s"\n\n**** Temp view creation ...****\n\n",
-      this.getClass.getName
-    )
-    log.info(
-      s"\n\n**** Temp view creation ...****\n\n",
-      this.getClass.getName
-    )
-
     val primaryMapper =
       new PrimaryMapper(
         fetchSource.getDataframe(PrimaryConstants.CLIENTS),

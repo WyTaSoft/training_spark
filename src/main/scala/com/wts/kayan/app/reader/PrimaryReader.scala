@@ -1,8 +1,9 @@
 package com.wts.kayan.app.reader
 
 import com.typesafe.config.Config
-import com.wts.kayan.app.utility.{SchemaSelector, PrimaryConstants}
+import com.wts.kayan.app.utility.{PrimaryConstants, SchemaSelector}
 import com.wts.kayan.app.utility.PrimaryUtilities.readDataFrame
+import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 class PrimaryReader()(implicit sparkSession: SparkSession, env: String, config: Config ) extends SchemaSelector {
@@ -12,6 +13,7 @@ class PrimaryReader()(implicit sparkSession: SparkSession, env: String, config: 
 
   private lazy val orders =
     readDataFrame(PrimaryConstants.ORDERS, ordersSchema)
+      .where(col("amount") > 100.00)
 
   def getDataframe(input: String): DataFrame = {
     input.toUpperCase match {
