@@ -1,10 +1,11 @@
 package com.wts.kayan.app.utility
 
 import com.typesafe.config.Config
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{Column, DataFrame, SparkSession}
 import org.slf4j.LoggerFactory
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.SparkContext
+import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.types.StructType
 
 import java.io.{BufferedReader, InputStreamReader, Reader}
@@ -52,10 +53,17 @@ object PrimaryUtilities {
   }
 
   def readDataFrame(sourceName: String,
-                    schema: StructType)
+                    schema: StructType,
+                    isCondition: Boolean = false,
+                    condition: Column = null)
                    (implicit sparkSession: SparkSession, env: String, config: Config): DataFrame = {
 
     log.info(s"\n**** Reading file to create DataFrame  ****\n")
+
+    // Génération de la condition effective
+
+    // Création d'une condition efficace
+    val effectiveCondition: Column = if (isCondition) condition else lit(true)
 
     var inputPath: String = ""
     var tableName = ""
@@ -79,7 +87,7 @@ object PrimaryUtilities {
       .schema(schema)
       .parquet(s"$inputPath${tableName.toLowerCase}/")
       .selectExpr(ColumnSelector.getColumnSequence(sourceName): _*)
-
+      .where(effectiveCondition)
 
     dataFrame
   }
@@ -91,7 +99,6 @@ object PrimaryUtilities {
     new BufferedReader(new InputStreamReader(fs.open(path)))
   }
 
-}
 
   def convertStringToDate(s: String, formatType: String): Date = {
     val format = new java.text.SimpleDateFormat(formatType)
@@ -104,3 +111,4 @@ object PrimaryUtilities {
 
     strDate
   }
+}

@@ -12,8 +12,7 @@ class PrimaryReader()(implicit sparkSession: SparkSession, env: String, config: 
     readDataFrame(PrimaryConstants.CLIENTS, clientsSchema)
 
   private lazy val orders =
-    readDataFrame(PrimaryConstants.ORDERS, ordersSchema)
-      .where(col("amount") > 100.00)
+    readDataFrame(PrimaryConstants.ORDERS, ordersSchema, true, col("amount") > 100.00)
 
   def getDataframe(input: String): DataFrame = {
     input.toUpperCase match {
