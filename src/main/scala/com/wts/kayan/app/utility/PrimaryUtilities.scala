@@ -111,4 +111,24 @@ object PrimaryUtilities {
 
     strDate
   }
+
+  def writeDataFrame(dataFrame: DataFrame,
+                     mode: String,
+                     numPartition: Int): Unit = {
+
+    log.info(s"\n *** Write started (mode:$mode numPartition:$numPartition) ...***\n")
+
+    dataFrame
+      .coalesce(numPartition)
+      .write
+      .option("header", "true")
+      .format("parquet")
+      .partitionBy("location")
+      .mode(s"$mode")
+      .save("/project/datalake/clients_orders")
+
+    log.info(s"\n *** Write Completed ...***... \n")
+
+  }
+
 }
