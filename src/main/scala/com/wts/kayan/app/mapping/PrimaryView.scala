@@ -4,7 +4,7 @@ object PrimaryView {
 
   val get_client_order_SqlString: String =
     """
-      |  SELECT
+      |  SELECT /*+ BROADCAST(c) */
       |    c.clientId,
       |    c.name,
       |    c.location,
