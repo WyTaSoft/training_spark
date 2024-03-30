@@ -121,7 +121,6 @@ object PrimaryUtilities {
     dataFrame
       .coalesce(numPartition)
       .write
-      .option("header", "true")
       .format("parquet")
       .partitionBy("location")
       .mode(s"$mode")
