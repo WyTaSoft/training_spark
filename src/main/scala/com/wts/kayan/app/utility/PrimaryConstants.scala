@@ -7,4 +7,7 @@ object PrimaryConstants {
   val CLIENTS = "clients"
   val ORDERS = "orders"
 
+  val MODE_APPEND = "Append"
+
+
 }

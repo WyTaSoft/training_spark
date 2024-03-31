@@ -6,6 +6,7 @@ import com.wts.kayan.SessionManager.SparkSessionManager
 import com.wts.kayan.app.common.PrimaryRunner
 import com.wts.kayan.app.reader.PrimaryReader
 import com.wts.kayan.app.utility.PrimaryConstants
+import com.wts.kayan.app.writer.PrimaryWriter
 import org.slf4j.LoggerFactory
 
 object MainDriver {
@@ -24,13 +25,17 @@ object MainDriver {
     val sparkSession = SparkSessionManager.fetchSparkSession(PrimaryConstants.APPLICATION_NAME)
 
     val reader = getHdfsReader(absoluteConfigPath)(sparkSession.sparkContext)
+
     val config = ConfigFactory.parseReader(reader)
 
     logger.info(s"\n\n****  training job has started ... **** \n\n", this.getClass.getName)
 
     val primaryReader = new PrimaryReader()(sparkSession, env, config)
-
+    val primaryWriter = new PrimaryWriter()(env)
     val primaryRunner = new PrimaryRunner(primaryReader)(sparkSession).runPrimaryRunner()
+
+    primaryWriter.write(primaryRunner, PrimaryConstants.MODE_APPEND, 150)(env)
+
 
     sparkSession.close()
   }

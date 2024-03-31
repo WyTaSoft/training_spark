@@ -114,7 +114,7 @@ object PrimaryUtilities {
 
   def writeDataFrame(dataFrame: DataFrame,
                      mode: String,
-                     numPartition: Int): Unit = {
+                     numPartition: Int)(implicit env: String): Unit = {
 
     log.info(s"\n *** Write started (mode:$mode numPartition:$numPartition) ...***\n")
 
@@ -124,7 +124,7 @@ object PrimaryUtilities {
       .format("parquet")
       .partitionBy("location")
       .mode(s"$mode")
-      .save("/project/datalake/clients_orders")
+      .save(s"/$env/project/datalake/clients_orders")
 
     log.info(s"\n *** Write Completed ...***... \n")
 
