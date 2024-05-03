@@ -13,11 +13,5 @@ class PrimaryReader()(implicit sparkSession: SparkSession, env: String, config: 
   private lazy val orders =
     readDataFrame(PrimaryConstants.ORDERS, ordersSchema)
 
-  def getDataframe(input: String): DataFrame = {
-    input.toUpperCase match {
-      case "CLIENTS"    => clients
-      case "ORDERS"    => orders
-    }
-  }
 
 }
