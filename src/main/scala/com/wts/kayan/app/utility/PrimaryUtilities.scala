@@ -63,11 +63,11 @@ object PrimaryUtilities {
     sourceName match {
 
       case PrimaryConstants.CLIENTS =>
-        inputPath = "/project/datalake/"
+        inputPath = s"$env/project/datalake/"
         tableName = "clients"
 
       case PrimaryConstants.ORDERS =>
-        inputPath = "/project/datalake/"
+        inputPath = s"$env/project/datalake/"
         tableName = "orders"
         val PartitionedValue = getMaxPartition(s"$inputPath${tableName.toLowerCase}/")(sparkSession)
         tableName = s"orders/date=$PartitionedValue"
