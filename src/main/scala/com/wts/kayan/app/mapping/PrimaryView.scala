@@ -12,9 +12,9 @@ object PrimaryView {
       |    o.amount,
       |    o.date
       |  FROM
-      |    clients_view c
-      |  JOIN
       |    orders_view o
+      |  LEFT JOIN
+      |    clients_view c
       |  ON
       |    c.clientId = o.clientId
       |""".stripMargin
