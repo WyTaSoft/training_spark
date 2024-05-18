@@ -11,14 +11,30 @@ import java.io.{BufferedReader, InputStreamReader, Reader}
 import java.text.SimpleDateFormat
 import java.util.Date
 
+/**
+ * Utility object containing methods for interacting with HDFS, reading data frames,
+ * and handling date conversions, tailored for Spark applications.
+ * These utilities are designed to facilitate common tasks like reading data,
+ * finding the most recent data partitions, and parsing dates, thereby simplifying data management tasks.
+ *
+ * @note Use these utilities to enhance code reusability and maintain clean, efficient operations within Spark jobs.
+ */
 object PrimaryUtilities {
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
+  /**
+   * Fetches the most recent partition based on a date column from a specified HDFS path.
+   * This method is useful for incremental data loading scenarios.
+   *
+   * @param path The HDFS directory to scan.
+   * @param columnPartitioned The partition column, defaulted to 'date'.
+   * @param spark The Spark session.
+   * @return The most recent partition date as a string, or a far-future date if no partitions exist.
+   */
   def getMaxPartition(path: String, columnPartitioned: String = "date")(
     spark: SparkSession): String = {
-    val fs = org.apache.hadoop.fs.FileSystem
-      .get(spark.sparkContext.hadoopConfiguration)
+    val fs = FileSystem.get(spark.sparkContext.hadoopConfiguration)
 
     try {
       val listOfInsertDates: Array[String] = fs
@@ -37,7 +53,7 @@ object PrimaryUtilities {
         log.info(s"\n**** max $columnPartitioned $maxDate ****\n")
         maxDate
       } else if (insertDateStr.length == 0) {
-        log.info(s"\n**** there are no partition by $columnPartitioned in $path  ****\n")
+        log.info(s"\n**** there are no partition by $columnPartitioned in $path ****\n")
         "2999-01-01"
       } else {
         log.info(s"\n**** max $columnPartitioned ${insertDateStr(0)} ****\n")
@@ -45,62 +61,61 @@ object PrimaryUtilities {
       }
     } catch {
       case _: Throwable =>
-        println("Fatal Exception: Check Src-View Data")
+        log.error("Fatal Exception: Check Src-View Data")
         throw new ArrayIndexOutOfBoundsException
-
     }
   }
 
+  /**
+   * Reads a DataFrame from a specified source path using a predefined schema, supporting data partitioning.
+   *
+   * @param sourceName The identifier for the data source to load.
+   * @param schema The schema to apply to the DataFrame.
+   * @param sparkSession Implicit SparkSession to handle DataFrame operations.
+   * @param env Implicit environment used for building the data path.
+   * @param config Implicit Config object for additional settings.
+   * @return DataFrame loaded from the specified path.
+   */
   def readDataFrame(sourceName: String,
                     schema: StructType)
                    (implicit sparkSession: SparkSession, env: String, config: Config): DataFrame = {
+    log.info(s"\n**** Reading file to create DataFrame ****\n")
+    var inputPath: String = env + "/project/datalake/"
+    var tableName = sourceName
 
-    log.info(s"\n**** Reading file to create DataFrame  ****\n")
-
-    var inputPath: String = ""
-    var tableName = ""
-
-    sourceName match {
-
-      case PrimaryConstants.CLIENTS =>
-        inputPath = "/project/datalake/"
-        tableName = "clients"
-
-      case PrimaryConstants.ORDERS =>
-        inputPath = "/project/datalake/"
-        tableName = "orders"
-        val PartitionedValue = getMaxPartition(s"$inputPath${tableName.toLowerCase}/")(sparkSession)
-        tableName = s"orders/date=$PartitionedValue"
-    }
+    val PartitionedValue = getMaxPartition(s"$inputPath${tableName.toLowerCase}/")(sparkSession)
+    tableName = s"$sourceName/date=$PartitionedValue"
 
     log.info(s"\n Loading $sourceName from $inputPath${tableName.toLowerCase} ***\n")
-
     val dataFrame: DataFrame = sparkSession.read
       .schema(schema)
       .parquet(s"$inputPath${tableName.toLowerCase}/")
       .selectExpr(ColumnSelector.getColumnSequence(sourceName): _*)
 
-
     dataFrame
   }
 
-
+  /**
+   * Opens a file in HDFS and returns a BufferedReader to read the file's contents.
+   *
+   * @param filePath The full path to the file in HDFS.
+   * @param sc The SparkContext to access Hadoop configurations.
+   * @return A BufferedReader that can be used to read the file.
+   */
   def getHdfsReader(filePath: String)(sc: SparkContext): Reader = {
     val fs = FileSystem.get(sc.hadoopConfiguration)
     val path = new Path(filePath)
     new BufferedReader(new InputStreamReader(fs.open(path)))
   }
 
-}
-
-  def convertStringToDate(s: String, formatType: String): Date = {
-    val format = new java.text.SimpleDateFormat(formatType)
+  private def convertStringToDate(s: String, formatType: String): Date = {
+    val format = new SimpleDateFormat(formatType)
     format.parse(s)
   }
 
-  def dateToStrNdReformat(date: Date, format: String): String = {
+  private def dateToStrNdReformat(date: Date, format: String): String = {
     val df = new SimpleDateFormat(format)
     val strDate = df.format(date)
-
     strDate
   }
+}
