@@ -12,14 +12,31 @@ import java.io.{BufferedReader, InputStreamReader, Reader}
 import java.text.SimpleDateFormat
 import java.util.Date
 
+/**
+ * Utility object providing various methods for handling data operations in a Spark application.
+ * Includes methods for reading data frames, handling partitions, and reading files from HDFS.
+ * These utilities are designed to facilitate common tasks and improve code reusability.
+ * @author Mehdi TAJMOUATI
+ * @note Ensure that the SparkSession is properly configured and active before invoking this class.
+ * @see <a href="https://www.wytasoft.com/wytasoft-group/">Visit WyTaSoft for more information on Spark applications and data processing.</a>
+ */
 object PrimaryUtilities {
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
+  /**
+   * Retrieves the most recent partition based on a specified column from a given HDFS path.
+   * This is particularly useful for incremental data loading scenarios.
+   *
+   * @param path The HDFS directory path to scan for partitions.
+   * @param columnPartitioned The column by which the data is partitioned, default is "date".
+   * @param spark Implicit SparkSession needed for accessing HDFS.
+   * @return The most recent partition value as a string in "yyyy-MM-dd" format or a default future date if no partitions are found.
+   * @throws ArrayIndexOutOfBoundsException If an error occurs while reading the partition data.
+   */
   def getMaxPartition(path: String, columnPartitioned: String = "date")(
     spark: SparkSession): String = {
-    val fs = org.apache.hadoop.fs.FileSystem
-      .get(spark.sparkContext.hadoopConfiguration)
+    val fs = FileSystem.get(spark.sparkContext.hadoopConfiguration)
 
     try {
       val listOfInsertDates: Array[String] = fs
@@ -48,10 +65,21 @@ object PrimaryUtilities {
       case _: Throwable =>
         println("Fatal Exception: Check Src-View Data")
         throw new ArrayIndexOutOfBoundsException
-
     }
   }
 
+  /**
+   * Reads a DataFrame from a specified source path using a predefined schema and an optional filter condition.
+   *
+   * @param sourceName The name of the data source to read.
+   * @param schema The schema to apply to the DataFrame.
+   * @param isCondition A boolean indicating whether a condition should be applied.
+   * @param condition The condition to apply as a filter, defaults to no condition.
+   * @param sparkSession Implicit SparkSession for DataFrame operations.
+   * @param env Implicit environment string for path construction.
+   * @param config Implicit Config for additional settings.
+   * @return DataFrame loaded from the specified HDFS path with the applied schema and condition.
+   */
   def readDataFrame(sourceName: String,
                     schema: StructType,
                     isCondition: Boolean = false,
@@ -61,19 +89,15 @@ object PrimaryUtilities {
     log.info(s"\n**** Reading file to create DataFrame  ****\n")
 
     // Génération de la condition effective
-
-    // Création d'une condition efficace
     val effectiveCondition: Column = if (isCondition) condition else lit(true)
 
     var inputPath: String = ""
     var tableName = ""
 
     sourceName match {
-
       case PrimaryConstants.CLIENTS =>
         inputPath = "/project/datalake/"
         tableName = "clients"
-
       case PrimaryConstants.ORDERS =>
         inputPath = "/project/datalake/"
         tableName = "orders"
@@ -92,23 +116,41 @@ object PrimaryUtilities {
     dataFrame
   }
 
-
+  /**
+   * Opens a file from HDFS and returns a BufferedReader to read the file content.
+   *
+   * @param filePath The path to the file on HDFS.
+   * @param sc SparkContext to access Hadoop configuration.
+   * @return BufferedReader to read the file content.
+   */
   def getHdfsReader(filePath: String)(sc: SparkContext): Reader = {
     val fs = FileSystem.get(sc.hadoopConfiguration)
     val path = new Path(filePath)
     new BufferedReader(new InputStreamReader(fs.open(path)))
   }
 
-
+  /**
+   * Converts a string to a Date object based on the provided date format.
+   *
+   * @param s The date string to convert.
+   * @param formatType The format of the date string.
+   * @return Date object representing the parsed date string.
+   */
   def convertStringToDate(s: String, formatType: String): Date = {
-    val format = new java.text.SimpleDateFormat(formatType)
+    val format = new SimpleDateFormat(formatType)
     format.parse(s)
   }
 
+  /**
+   * Reformats a Date object to a string based on the provided date format.
+   *
+   * @param date The Date object to reformat.
+   * @param format The desired format of the date string.
+   * @return String representing the formatted date.
+   */
   def dateToStrNdReformat(date: Date, format: String): String = {
     val df = new SimpleDateFormat(format)
     val strDate = df.format(date)
-
     strDate
   }
 }
