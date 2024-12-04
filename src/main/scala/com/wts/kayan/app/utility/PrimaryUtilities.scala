@@ -86,32 +86,30 @@ object PrimaryUtilities {
                     schema: StructType,
                     isCondition: Boolean = false,
                     condition: Column = null)
-                   (implicit sparkSession: SparkSession, env: String, config: Config): DataFrame = {
+                   (implicit sparkSession: SparkSession, env: String): DataFrame = {
 
     log.info(s"\n**** Reading file to create DataFrame ****\n")
 
     // Generate the effective condition
     val effectiveCondition: Column = if (isCondition) condition else lit(true)
 
-    var inputPath: String = ""
+    var inputPath: String = "/prd/project/datalake/"
     var tableName = ""
 
     sourceName match {
       case PrimaryConstants.CLIENTS =>
-        inputPath = "/project/datalake/"
         tableName = "clients"
       case PrimaryConstants.ORDERS =>
-        inputPath = "/project/datalake/"
         tableName = "orders"
-        val PartitionedValue = getMaxPartition(s"$inputPath${tableName.toLowerCase}/")(sparkSession)
-        tableName = s"orders/date=$PartitionedValue"
+        //val PartitionedValue = getMaxPartition(s"$inputPath${tableName.toLowerCase}/")(sparkSession)
+        //tableName = s"orders/date=$PartitionedValue"
     }
 
     log.info(s"\n Loading $sourceName from $inputPath${tableName.toLowerCase} ***\n")
 
     val dataFrame: DataFrame = sparkSession.read
       .schema(schema)
-      .parquet(s"$inputPath${tableName.toLowerCase}/")
+      .csv(s"$inputPath${tableName.toLowerCase}/")
       .selectExpr(ColumnSelector.getColumnSequence(sourceName): _*)
       .where(effectiveCondition)
 
